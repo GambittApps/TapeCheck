@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TapeCheck - Army Body Composition Suite</title>
+    <style>
+        :root {
+            --bg-color: #12181b;
+            --card-bg: #1e272c;
+            --accent-gold: #e5b800;
+            --text-main: #f0f4f8;
+            --text-sub: #9ba7b4;
+            --pass-color: #2e7d32;
+            --fail-color: #c62828;
+            --tab-inactive: #161e22;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-top: 4px solid var(--accent-gold);
+            border-radius: 8px;
+            padding: 24px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+
+        .header-logo {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .header-logo svg {
+            width: 48px;
+            height: 48px;
+            fill: var(--accent-gold);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin: 0 0 4px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-align: center;
+        }
+
+        .subtitle {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        /* Tabs System */
+        .tab-container {
+            display: flex;
+            background-color: var(--tab-inactive);
+            border-radius: 6px;
+            padding: 4px;
+            margin-bottom: 20px;
+            gap: 4px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px 6px;
+            background: none;
+            border: none;
+            color: var(--text-sub);
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background-color: var(--card-bg);
+            color: var(--accent-gold);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+            color: var(--text-sub);
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #34495e;
+            background-color: #12181b;
+            color: #fff;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+        }
+
+        button.action-btn {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--accent-gold);
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 4px;
+            text-align: center;
+            display: none;
+            background-color: #161e22;
+        }
+
+        .result-score {
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+
+        .status-badge {
+            font-size: 1rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+
+        .pass { background-color: var(--pass-color); color: #fff; }
+        .fail { background-color: var(--fail-color); color: #fff; }
+
+        .btn-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .sec-btn {
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .danger-btn {
+            border-color: #e74c3c;
+            color: #e74c3c;
+        }
+
+        /* History & Modal Styles */
+        .history-section {
+            margin-top: 24px;
+            border-top: 1px solid #34495e;
+            padding-top: 16px;
+        }
+
+        .history-title {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #222c32;
+            font-size: 0.8rem;
+        }
+
+        .modal-bg {
+            position: fixed;
+            top:0; left:0; right:0; bottom:0;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+            z-index: 100;
+        }
+
+        .modal-body {
+            background-color: var(--card-bg);
+            border: 1px solid var(--accent-gold);
+            border-radius: 8px;
+            padding: 20px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-body h2 {
+            font-size: 1.1rem;
+            margin-top: 0;
+            color: var(--accent-gold);
+        }
+
+        .modal-body textarea {
+            width: 100%;
+            height: 180px;
+            background-color: #12181b;
+            color: #fff;
+            border: 1px solid #34495e;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 0.75rem;
+            box-sizing: border-box;
+            border-radius: 4px;
+            resize: none;
+        }
+
+        .monetization-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .monetization-row .sec-btn {
+            flex: 1;
+            font-size: 0.75rem;
+        }
+
+        .note {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            margin-top: 12px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <!-- Tactical Stencil Gold Star Emblem -->
+    <div class="header-logo">
+        <svg viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" fill="none" stroke="#e5b800" stroke-width="3" stroke-dasharray="6,3"/>
+            <polygon points="50,15 61,38 85,38 66,52 73,76 50,61 27,76 34,52 15,38 39,38"/>
+        </svg>
+    </div>
+
+    <h1>TapeCheck</h1>
+    <div class="subtitle">Army Body Composition Suite</div>
+
+    <!-- Navigation Tabs -->
+    <div class="tab-container">
+        <button class="tab-btn active" onclick="switchTab('whtrTab', this)">Active WHtR</button>
+        <button class="tab-btn" onclick="switchTab('priorTab', this)">Prior Service Tape</button>
+    </div>
+
+    <!-- TAB 1: Active Duty WHtR -->
+    <div id="whtrTab" class="tab-content active">
+        <div class="input-group">
+            <label>Height</label>
+            <div class="row">
+                <input type="number" id="feet" placeholder="Feet" min="3" max="8">
+                <input type="number" id="inches" placeholder="Inches" min="0" max="11" value="0">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>Navel Waist (Inches)</label>
+            <input type="number" id="waistWHtR" placeholder="e.g. 34.5" step="0.1">
+        </div>
+
+        <button class="action-btn" onclick="calcWHtR()">Calculate WHtR</button>
+    </div>
+
+    <!-- TAB 2: Prior Service / Accessions Tape % -->
+    <div id="priorTab" class="tab-content">
+        <div class="input-group">
+            <label>Biological Sex</label>
+            <select id="sexSelect">
+                <option value="male">Male (Max 26%)</option>
+                <option value="female">Female (Max 36%)</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label>Total Body Weight (lbs)</label>
+            <input type="number" id="weightLbs" placeholder="e.g. 195" step="0.5">
+        </div>
+
+        <div class="input-group">
+            <label>Navel Waist (Inches)</label>
+            <input type="number" id="waistTape" placeholder="e.g. 36.0" step="0.1">
+        </div>
+
+        <button class="action-btn" onclick="calcPriorServiceTape()">Calculate Body Fat %</button>
+    </div>
+
+    <!-- Results Display -->
+    <div id="result" class="result-box">
+        <div id="statusBadge" class="status-badge"></div>
+        <div id="score" class="result-score">0.00</div>
+        <div id="details" style="font-size: 0.85rem; color: var(--text-sub);"></div>
+
+        <div class="btn-stack">
+            <button class="sec-btn" onclick="openSummaryModal()">Copy Official Summary</button>
+            <button id="counselingBtn" class="sec-btn danger-btn" style="display: none;" onclick="openCounselingModal()">Generate DA 4856 Draft</button>
+        </div>
+    </div>
+
+    <!-- Weigh-In History Log -->
+    <div class="history-section">
+        <div class="history-title">
+            <span>Weigh-In History</span>
+            <span style="font-size: 0.7rem; color: #e74c3c; cursor: pointer;" onclick="clearHistory()">Clear</span>
+        </div>
+        <ul id="historyList" class="history-list">
+            <li class="history-item" style="color: var(--text-sub);">No weigh-ins saved yet.</li>
+        </ul>
+    </div>
+
+    <!-- Monetization Options -->
+    <div class="monetization-row">
+        <button class="sec-btn" onclick="alert('Venmo / Ko-fi: Support the developer!')">Buy Me a C4</button>
+        <button class="sec-btn" onclick="alert('Unlock Pro Pass ($1.99) for automated PDF exporting!')">Unlock Pro</button>
+    </div>
+
+    <div id="footerNote" class="note">Standard: Active Duty WHtR &lt; 0.550 (Truncated).</div>
+</div>
+
+<!-- Text Output Modal -->
+<div id="modal" class="modal-bg">
+    <div class="modal-body">
+        <h2 id="modalTitle">Summary</h2>
+        <textarea id="modalText" readonly></textarea>
+        <div class="btn-stack" style="margin-top: 10px;">
+            <button class="action-btn" onclick="copyModalText()">Copy to Clipboard</button>
+            <button class="sec-btn" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentResult = {};
+
+    // Load history on page load
+    document.addEventListener("DOMContentLoaded", renderHistory);
+
+    function switchTab(tabId, element) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        
+        document.getElementById(tabId).classList.add('active');
+        element.classList.add('active');
+        
+        document.getElementById('result').style.display = 'none';
+
+        if (tabId === 'whtrTab') {
+            document.getElementById('footerNote').innerText = "Standard: Active Duty WHtR < 0.550 (Truncated).";
+        } else {
+            document.getElementById('footerNote').innerText = "Standard: AD 2023-11 Single-Site Accession Tape.";
+        }
+    }
+
+    function calcWHtR() {
+        const feet = parseFloat(document.getElementById('feet').value) || 0;
+        const inches = parseFloat(document.getElementById('inches').value) || 0;
+        const waist = parseFloat(document.getElementById('waistWHtR').value) || 0;
+
+        const totalHeight = (feet * 12) + inches;
+
+        if (totalHeight <= 0 || waist <= 0) {
+            alert("Please enter valid height and waist values.");
+            return;
+        }
+
+        const rawRatio = waist / totalHeight;
+        const truncatedRatio = (Math.floor(rawRatio * 1000) / 1000).toFixed(3);
+        const isPass = parseFloat(truncatedRatio) < 0.550;
+
+        currentResult = {
+            type: "Active WHtR",
+            score: truncatedRatio,
+            pass: isPass,
+            height: `${feet}'${inches}"`,
+            waist: `${waist}"`,
+            date: new Date().toLocaleDateString()
+        };
+
+        displayResult(truncatedRatio, isPass, "Compliant with Active Duty WHtR standards.", "ABCP FLAG RISK: Exceeds 0.550 ratio limit.");
+        saveToHistory(currentResult);
+    }
+
+    function calcPriorServiceTape() {
+        const sex = document.getElementById('sexSelect').value;
+        const weight = parseFloat(document.getElementById('weightLbs').value) || 0;
+        const waist = parseFloat(document.getElementById('waistTape').value) || 0;
+
+        if (weight <= 0 || waist <= 0) {
+            alert("Please enter valid weight and waist measurements.");
+            return;
+        }
+
+        let bodyFatPct = (sex === 'male') 
+            ? -26.97 - (0.12 * weight) + (1.99 * waist)
+            : -9.15 - (0.015 * weight) + (1.27 * waist);
+
+        const finalPct = Math.round(bodyFatPct);
+        const maxAllowed = (sex === 'male') ? 26 : 36;
+        const isPass = finalPct <= maxAllowed;
+
+        currentResult = {
+            type: "Prior Service",
+            score: `${finalPct}%`,
+            pass: isPass,
+            weight: `${weight} lbs`,
+            waist: `${waist}"`,
+            date: new Date().toLocaleDateString()
+        };
+
+        displayResult(`${finalPct}%`, isPass, `Compliant. Below max ${maxAllowed}% body fat limit.`, `Exceeds accession limit (${finalPct}% / Max ${maxAllowed}%).`);
+        saveToHistory(currentResult);
+    }
+
+    function displayResult(scoreText, isPass, passMsg, failMsg) {
+        const resultBox = document.getElementById('result');
+        const statusBadge = document.getElementById('statusBadge');
+        const scoreDisplay = document.getElementById('score');
+        const detailsDisplay = document.getElementById('details');
+        const counselingBtn = document.getElementById('counselingBtn');
+
+        resultBox.style.display = 'block';
+        scoreDisplay.innerText = scoreText;
+
+        if (isPass) {
+            statusBadge.innerText = "PASS";
+            statusBadge.className = "status-badge pass";
+            detailsDisplay.innerText = passMsg;
+            counselingBtn.style.display = 'none';
+        } else {
+            statusBadge.innerText = "FLAG RISK";
+            statusBadge.className = "status-badge fail";
+            detailsDisplay.innerText = failMsg;
+            counselingBtn.style.display = 'block';
+        }
+    }
+
+    /* Local History Management */
+    function saveToHistory(item) {
+        let history = JSON.parse(localStorage.getItem('tapecheck_history') || '[]');
+        history.unshift(item);
+        if(history.length > 10) history.pop();
+        localStorage.setItem('tapecheck_history', JSON.stringify(history));
+        renderHistory();
+    }
+
+    function renderHistory() {
+        let history = JSON.parse(localStorage.getItem('tapecheck_history') || '[]');
+        const listEl = document.getElementById('historyList');
+        if (history.length === 0) {
+            listEl.innerHTML = '<li class="history-item" style="color: var(--text-sub);">No weigh-ins saved yet.</li>';
+            return;
+        }
+
+        listEl.innerHTML = history.map(h => `
+            <li class="history-item">
+                <span><strong>${h.date}</strong> (${h.type})</span>
+                <span style="color: ${h.pass ? '#2e7d32' : '#c62828'}; font-weight: bold;">${h.score} - ${h.pass ? 'PASS' : 'FLAG'}</span>
+            </li>
+        `).join('');
+    }
+
+    function clearHistory() {
+        localStorage.removeItem('tapecheck_history');
+        renderHistory();
+    }
+
+    /* Modal Generators */
+    function openSummaryModal() {
+        document.getElementById('modalTitle').innerText = "DA Form 5500 Summary";
+        let text = `*** TAPECHECK WORKPAD SUMMARY ***\nDate: ${currentResult.date}\nType: ${currentResult.type}\nScore: ${currentResult.score}\nStatus: ${currentResult.pass ? 'PASS' : 'FAIL / FLAG'}\n`;
+        if(currentResult.type === "Active WHtR") {
+            text += `Height: ${currentResult.height}\nWaist: ${currentResult.waist}\nStandard: AD 2026-13 (Ratio < 0.550)`;
+        } else {
+            text += `Weight: ${currentResult.weight}\nWaist: ${currentResult.waist}\nStandard: AD 2023-11 Single-Site`;
+        }
+        document.getElementById('modalText').value = text;
+        document.getElementById('modal').style.display = 'flex';
+    }
+
+    function openCounselingModal() {
+        document.getElementById('modalTitle').innerText = "DA Form 4856 Counseling Draft";
+        let text = `DA FORM 4856 - DEVELOPMENTAL COUNSELING DRAFT\n` +
+            `Purpose of Counseling: Administrative notification of Army Body Composition Program (ABCP) standard non-compliance pursuant to Army Directive 2026-13.\n\n` +
+            `Key Points of Discussion:\n` +
+            `1. On ${currentResult.date}, you underwent official body composition assessment. Your Waist-to-Height Ratio (WHtR) was calculated at ${currentResult.score}, which exceeds the authorized standard of < 0.550.\n` +
+            `2. You will be flagged under AR 600-8-2 and referred for medical evaluation and dietitian counseling.\n\n` +
+            `Plan of Action:\n` +
+            `- Participate in unit H2F physical readiness training.\n` +
+            `- Maintain a weekly exercise/nutrition log.\n` +
+            `- Monthly re-assessment until WHtR ratio falls below 0.550.`;
+        
+        document.getElementById('modalText').value = text;
+        document.getElementById('modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('modal').style.display = 'none';
+    }
+
+    function copyModalText() {
+        const textEl = document.getElementById('modalText');
+        textEl.select();
+        document.execCommand('copy');
+        alert("Copied to clipboard!");
+    }
+</script>
+
+</body>
+</html>
